@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Display PDFs from Firebase</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      display: flex;
+      justify-self: center;
+      align-items: center;
+      flex-direction: column;
+      padding: 20px;
+      background-color: #f4f4f9;
+    }
+    h1,h3 {
+      text-align: center;
+
+      color: #333;
+    }
+    #pdf-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      padding: 20px;
+    }
+    .pdf-item {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      padding: 10px;
+      transition: transform 0.3s ease;
+    }
+    .pdf-item:hover {
+      transform: scale(1.03);
+    }
+    h3 {
+      font-size: 1.2em;
+      margin-bottom: 10px;
+      color: #555;
+    }
+    embed {
+      width: 100%;
+      height: 400px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>PDF Files from Firebase Storage</h1>
+  <div id="pdf-list"></div>
+
+  <script type="module">
+    // Import Firebase SDKs
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+    import { getStorage, ref, listAll, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-storage.js";
+
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBJ45zU32uF6ODAS5i3a02HvGQSZ72S2Xo",
+      authDomain: "hush2-26f08.firebaseapp.com",
+      projectId: "hush2-26f08",
+      storageBucket: "hush2-26f08.appspot.com",
+      messagingSenderId: "347396405707",
+      appId: "1:347396405707:web:474b8006ac400514e79e4e",
+      measurementId: "G-LQXP2W8QPC"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const storage = getStorage(app);
+
+    async function getPDFFilesFromStorage(folder) {
+      const storageRef = ref(storage, folder); 
+
+      try {
+        const result = await listAll(storageRef);
+        result.items.forEach(async (fileRef) => {
+          const url = await getDownloadURL(fileRef);
+          console.log("PDF URL:", url); 
+          displayPDF(url, fileRef.name);
+        });
+      } catch (error) {
+        console.error("Error fetching files from storage:", error);
+      }
+    }
+
+    // Function to display the PDF files on the webpage
+    function displayPDF(url, fileName) {
+      const pdfList = document.getElementById('pdf-list');
+      const pdfItem = document.createElement('div');
+
+      // Create an <embed> to display the PDF
+      const pdfViewer = document.createElement('embed');
+      pdfViewer.src = url;
+      pdfViewer.type = "application/pdf";
+      pdfViewer.width = '100%';
+      pdfViewer.height = '600px';
+
+      // Add a heading with the file name
+      const fileHeading = document.createElement('h3');
+      fileHeading.textContent = fileName;
+
+      pdfItem.appendChild(fileHeading);
+      pdfItem.appendChild(pdfViewer);
+      pdfList.appendChild(pdfItem);
+    }
+
+    // Call the function to get PDFs from a specific folder in Firebase Storage
+    getPDFFilesFromStorage('Smart_AIT'); // Replace 'your-folder-name' with your folder path in Firebase Storage
+  </script>
+</body>
+</html>
